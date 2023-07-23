@@ -1,13 +1,10 @@
 package com.spring.clientmanager.service;
 
-public class Luhn
+public class Validator
 {
 
     public static int generate(String number)
     {
-        // if ( ! ctype_digit($number))
-        // 	throw new Exception("Number can only have digits");
-
         int length = number.length();
         int sum    = 0;
         int weight = 2;

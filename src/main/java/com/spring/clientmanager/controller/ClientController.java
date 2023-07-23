@@ -1,12 +1,15 @@
 package com.spring.clientmanager.controller;
 
+import com.spring.clientmanager.exception.UserNotFoundException;
 import com.spring.clientmanager.model.Client;
 import com.spring.clientmanager.service.ClientService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.List;
 
 @RestController
@@ -33,8 +36,8 @@ public class ClientController {
     }
 
     @GetMapping("/findByFirstName/{firstName}")
-    public ResponseEntity<List<Client>> getClientByFirstName (@PathVariable("firstName") String firstName) {
-        List<Client> client = clientService.findClientByFirstName(firstName);
+    public ResponseEntity<List<Client>> getClientsByFirstName (@PathVariable ("firstName") String firstName) throws UserNotFoundException {
+        List<Client> client = clientService.findClientsByFirstName(firstName);
         return new ResponseEntity<>(client, HttpStatus.OK);
     }
 
@@ -45,13 +48,13 @@ public class ClientController {
     }
 
     @PostMapping("/add")
-    public ResponseEntity<Client> addClient(@RequestBody Client Client) {
-        Client newClient = clientService.addClient(Client);
+    public ResponseEntity<Client> addClient(@RequestBody @Valid Client client) throws SQLIntegrityConstraintViolationException {
+        Client newClient = clientService.addClient(client);
         return new ResponseEntity<>(newClient, HttpStatus.CREATED);
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<Client> updateClient(@RequestBody Client Client, @PathVariable("id") Long id) {
+    public ResponseEntity<Client> updateClient(@RequestBody Client Client, @PathVariable("id") Long id) throws Exception {
         Client updateClient = clientService.updateClient(Client, id);
         return new ResponseEntity<>(updateClient, HttpStatus.OK);
     }

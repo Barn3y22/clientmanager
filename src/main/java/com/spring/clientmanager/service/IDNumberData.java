@@ -11,13 +11,6 @@ public class IDNumberData{
     private Nationality citizenship;
     private boolean valid;
 
-    /**
-     * @param idNumber
-     * @param dateOfBirth
-     * @param gender
-     * @param citizenship
-     * @param valid
-     */
     public IDNumberData(String idNumber, LocalDate dateOfBirth, Gender gender, Nationality citizenship, boolean valid)
     {
         this.idNumber         = idNumber;

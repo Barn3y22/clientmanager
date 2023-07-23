@@ -59,10 +59,10 @@ public class IDNumberParser
         this.checkBit        = Integer.parseInt(idNumber.substring(12, 13));
     }
 
-    public IDNumberData parse(String idNumber) throws Exception
+    public IDNumberData parse(String idNumber) throws Exception //throws Exception
     {
         if (idNumber.length() != 13) {
-            throw new Exception("ID Length invalid: ZA ID Number must be 13 digits long");
+            throw new Exception();
         }
 
         this.idNumber = idNumber;
@@ -81,7 +81,7 @@ public class IDNumberParser
     private int calculateCheckBit()
     {
         String withoutChecksum = idNumber.substring(0, idNumber.length() - 1);
-        return Luhn.generate(withoutChecksum);
+        return Validator.generate(withoutChecksum);
     }
 
     /**

@@ -5,9 +5,12 @@ import com.spring.clientmanager.model.Client;
 import com.spring.clientmanager.repo.ClientRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.logging.Logger;
@@ -23,18 +26,19 @@ public class ClientService {
         this.clientRepo = clientRepo;
     }
 
-    public Client addClient(Client client) {
+    public Client addClient(Client client) throws SQLIntegrityConstraintViolationException {
 
-        Client clientsRecord = new Client();
+        Client clientsRecord = new Client(
+                client.getId(),
+                client.getFirstName(),
+                client.getLastName(),
+                client.getMobileNumber(),
+                client.getPhysicalAddress()
+        );
 
-        try {
-            clientsRecord = clientRepo.findClientById(client.getId());
-            
-        } catch (Exception e){
-            new UserNotFoundException("User by id " + clientRepo.findClientById(client.getId()).getId() + " does not exist and can be created");
-        }
+        Client existingClient = clientRepo.findClientById(clientsRecord.getId());
+        if (existingClient == null || existingClient.getId() != clientsRecord.getId()) {
 
-        if (client.getId() != clientsRecord.getId()) {
             String id = String.valueOf(client.getId());
             IDNumberParser idNumberParser = new IDNumberParser();
             IDNumberData idNumberData = null;
@@ -43,15 +47,17 @@ public class ClientService {
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
+
             if (idNumberData.isValid()){
                 clientRepo.save(client);
                 System.out.println("isValid: " + idNumberData.isValid());
             } else {
-                System.out.println("ID number is not a valid South african ID number");
+                System.out.println("isValid: " + idNumberData.isValid());
+                throw new RuntimeException();
             }
 
         } else {
-            Logger logger = Logger.getLogger("User Already Exists.............." + client);
+            throw new SQLIntegrityConstraintViolationException(String.valueOf(client.getId()));
         }
 
         return client;
@@ -61,29 +67,30 @@ public class ClientService {
         return clientRepo.findAll();
     }
 
-    public Client updateClient(Client client, long id) {
+    public Client updateClient(Client client, long id) throws Exception {
 
         Client clientsRecord = new Client();
 
         try{
             clientsRecord = clientRepo.findClientById(id);
-
         }catch (Exception e){
             new UserNotFoundException("User does not exist");
         }
+        if (Objects.nonNull(client.getFirstName()) && !"".equalsIgnoreCase(client.getFirstName())
+                &&  Objects.nonNull(client.getLastName()) && !"".equalsIgnoreCase(client.getLastName())
+                &&  Objects.nonNull(client.getMobileNumber()) && !"".equals(client.getMobileNumber())
+                &&  Objects.nonNull(client.getPhysicalAddress()) && !"".equalsIgnoreCase(client.getPhysicalAddress())) {
 
-        if (Objects.nonNull(client.getFirstName()) && !"".equalsIgnoreCase(client.getFirstName())) {
+            clientsRecord.setId(client.getId());
             clientsRecord.setFirstName(client.getFirstName());
-        }
-        if (Objects.nonNull(client.getLastName()) && !"".equalsIgnoreCase(client.getLastName())) {
             clientsRecord.setLastName(client.getLastName());
-        }
-        if (Objects.nonNull(client.getMobileNumber()) && !"".equals(client.getMobileNumber())) {
             clientsRecord.setMobileNumber(client.getMobileNumber());
-        }
-        if (Objects.nonNull(client.getPhysicalAddress()) && !"".equalsIgnoreCase(client.getPhysicalAddress())) {
             clientsRecord.setPhysicalAddress(client.getPhysicalAddress());
+
+        } else {
+            throw new Exception();
         }
+
         return clientRepo.save(clientsRecord);
     }
 
@@ -92,8 +99,16 @@ public class ClientService {
                // .orElseThrow(() -> new UserNotFoundException("User by id " + id + " was not found"));
     }
 
-    public List<Client> findClientByFirstName(String firstName){
-        return clientRepo.findClientByFirstName(firstName);
+    public List<Client> findClientsByFirstName(String firstName) throws UserNotFoundException {
+        List<Client> client = clientRepo.findClientsByFirstName(firstName);
+        List<Client> clientReturn = new ArrayList<>();
+
+        if (client != null && !client.isEmpty()){
+            clientReturn = clientRepo.findClientsByFirstName(firstName);
+        } else {
+            throw new UserNotFoundException(firstName + " was not found");
+        }
+        return clientReturn;
     }
 
     public Client findClientByMobileNumber(Long mobileNumber){

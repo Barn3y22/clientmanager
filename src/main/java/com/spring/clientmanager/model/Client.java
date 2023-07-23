@@ -1,22 +1,25 @@
 package com.spring.clientmanager.model;
 
 import jakarta.persistence.*;
-import org.antlr.v4.runtime.misc.NotNull;
+import jakarta.validation.constraints.NotBlank;
 
 import java.io.Serializable;
 
 @Entity
+@Table(name = "client", uniqueConstraints = @UniqueConstraint(name = "unique_id_mobile_number", columnNames = { "id" , "mobile_number" }))
 public class Client implements Serializable {
+    private static final long serialversionUID = 129348938L;
+
     @Id
-    @NotNull
+    @Column(name = "id")
     private long id;
-    @NotNull
+    @NotBlank(message = "Required field, please include")
     private String firstName;
-    @NotNull
+    @NotBlank(message = "Required field, please include")
     private String lastName;
+    @Column(name = "mobile_number")
     private long mobileNumber;
     private String physicalAddress;
-    //@Column(nullable = false, updatable =
 
     public Client(){}
     public Client(long id, String firstName, String lastName, long mobileNumber, String physicalAddress) {
