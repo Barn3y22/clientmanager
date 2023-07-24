@@ -1,6 +1,6 @@
 # clientmanager
+Search for, Add or update client details
 
-Add and Search clients 
 Endpoints to can be tested using postman
 
 e.g Test data.
